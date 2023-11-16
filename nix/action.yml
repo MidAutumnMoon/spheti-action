@@ -1,0 +1,32 @@
+inputs:
+
+    name:
+        description: What
+        required: false
+        default: Whhhhat
+
+
+runs:
+
+    using: composite
+
+    steps:
+
+        - name: PATH?
+          shell: bash
+          run: |
+            Trash=$(pwd)/trash
+            Leftover=$Trash/leftover
+            mkdir $Trash
+            echo "#!/usr/bin/env bash" >> $Leftover
+            echo "echo ${{ inputs.name }}" >> $Leftover
+            chmod a+x $Leftover
+            echo $Trash >> $GITHUB_PATH
+
+        - name: Display name
+          shell: bash
+          run: echo ${{ inputs.name }}
+
+        - name: Run leftover
+          shell: bash
+          run: leftover

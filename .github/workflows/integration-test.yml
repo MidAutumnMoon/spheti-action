@@ -1,0 +1,21 @@
+name: "Integration Test"
+
+on:
+    workflow_dispatch:
+    # push:
+
+
+jobs:
+
+    test-nix:
+        name: "Piece: nix"
+        runs-on: ubuntu-latest
+
+        defaults:
+            run: { shell: "bash" }
+
+        steps:
+            - uses: actions/checkout@v4
+            - uses: MidAutumnMoon/spheti-action/nix@master
+            - run: |
+                leftover
