@@ -1,9 +1,45 @@
 inputs:
 
-    name:
-        description: What
+    #
+    # Cachix
+    #
+    # Currently only supports single bucket setup.
+    #
+
+    cachix-url:
         required: false
-        default: Whhhhat
+        description: URL of Cachix bucket to use.
+
+    cachix-pubkey:
+        required: false
+        description: Pubkey of that Cachix bucket
+
+    # extra-substituters:
+
+    # extra-pubkeys:
+
+
+    #
+    # [Intended for internal use]
+    #
+
+    __flake_ref:
+        default: "nixpkgs/nixos-unstable"
+        required: false
+
+    __preinstall_tools:
+        default: >-
+            fish
+            python3
+        required: false
+
+    __checkout_path:
+        default: "${{ github.workspace }}/spheti-action-checkout"
+        required: false
+
+    __this_repo:
+        default: "MidAutumnMoon/spheti-action"
+        required: false
 
 
 runs:
@@ -12,21 +48,71 @@ runs:
 
     steps:
 
-        - name: PATH?
-          shell: bash
-          run: |
-            Trash=$(pwd)/trash
-            Leftover=$Trash/leftover
-            mkdir $Trash
-            echo "#!/usr/bin/env bash" >> $Leftover
-            echo "echo ${{ inputs.name }}" >> $Leftover
-            chmod a+x $Leftover
-            echo $Trash >> $GITHUB_PATH
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.__this_repo }}
+        path: ${{ inputs.__checkout_path }}
 
-        - name: Display name
-          shell: bash
-          run: echo ${{ inputs.name }}
+    - name: Setup nix
+      uses: DeterminateSystems/nix-installer-action@v7
+      with:
+        modify-profile: true
+        flakehub: false
+        init: systemd
 
-        - name: Run leftover
-          shell: bash
-          run: leftover
+    - name: Install essential tools via nix
+      shell: bash
+      run: |
+        IFS=" "
+        for tool in ${{ inputs.__preinstall_tools }}; do
+            echo "Install $tool"
+            nix profile install "${{ inputs.__flake_ref }}#$tool"
+        done
+
+    - name: Set TMPDIR for nix-daemon
+      shell: bash
+      run: |
+        fish "${{ inputs.__checkout_path }}/nix/set-tmpdir.fish"
+
+    - name: Add Cachix to substituters
+      if: ${{ inputs.cachix-url != '' }}
+      shell: bash
+      run: |
+        [[ "${{ inputs.cachix-pubkey }}" == "" ]] && {
+            echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
+            exit 1
+        }
+        python "${{ inputs.__checkout_path }}/nix/add-substituter.py" \
+            "/etc/nix/nix.conf" \
+            "${{ inputs.cachix-url }}" \
+            "${{ inputs.cachix-pubkey }}"
+
+    - name: Restart nix-daemon
+      shell: bash
+      run: |
+        sudo systemctl daemon-reload
+        sudo systemctl restart nix-daemon
+
+    - name: Verify setup
+      shell: bash
+      run: |
+        echo "Verify nix still builds"
+        nix build \
+            --no-link \
+            --print-build-logs \
+            -f "${{ inputs.__checkout_path }}/nix/fixtures/test-build.nix"
+        echo
+
+        echo "Show nix-daemon config"
+        sudo systemctl cat nix-daemon
+        echo
+
+        echo "Verify nix-daemon is active"
+        sudo systemctl is-active nix-daemon
+
+    - name: Cleanup
+      shell: bash
+      run: |
+          echo "Delete checkout on disk"
+          rm -rf "${{ inputs.__checkout_path }}"

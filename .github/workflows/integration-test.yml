@@ -15,7 +15,16 @@ jobs:
             run: { shell: "bash" }
 
         steps:
-            - uses: actions/checkout@v4
-            - uses: MidAutumnMoon/spheti-action/nix@master
-            - run: |
-                leftover
+            
+        - uses: actions/checkout@v4
+
+        - uses: MidAutumnMoon/spheti-action/nix@master
+          with:
+            cachix-url: "https://nuirrce.cachix.org/"
+            cachix-pubkey: "nuirrce.cachix.org-1:KQWa6ZfDkMPXeDiUpmyDhNw4CmgybPyeVklmi/1Rtqk="
+
+        - run: |
+            nix profile install nixpkgs#neofetch
+            which neofetch
+            neofetch
+            nix show-config
