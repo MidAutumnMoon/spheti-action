@@ -2,7 +2,7 @@ name: "Integration Test"
 
 on:
     workflow_dispatch:
-    # push:
+    push:
 
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
             run: { shell: "bash" }
 
         steps:
-            
+
         - uses: actions/checkout@v4
 
         - uses: MidAutumnMoon/spheti-action/nix@master
