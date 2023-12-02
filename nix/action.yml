@@ -60,6 +60,8 @@ runs:
         modify-profile: true
         flakehub: false
         init: systemd
+        extra-conf: |
+            accept-flake-config = true
 
     - name: Install essential tools via nix
       shell: bash
