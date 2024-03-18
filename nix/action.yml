@@ -55,7 +55,7 @@ runs:
         path: ${{ inputs.__checkout_path }}
 
     - name: Setup nix
-      uses: DeterminateSystems/nix-installer-action@v9
+      uses: DeterminateSystems/nix-installer-action@v10
       with:
         modify-profile: true
         flakehub: false
