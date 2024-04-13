@@ -1,8 +1,0 @@
-add-substituter-reset:
-    echo "" > ./empty.conf
-    cat "/etc/nix/nix.conf" > ./nix.conf
-
-
-alias r := reset
-
-reset: add-substituter-reset

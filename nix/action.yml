@@ -27,12 +27,6 @@ inputs:
         default: "nixpkgs/nixos-unstable"
         required: false
 
-    __preinstall_tools:
-        default: >-
-            fish
-            python3
-        required: false
-
     __checkout_path:
         default: "${{ github.workspace }}/spheti-action-checkout"
         required: false
@@ -63,19 +57,10 @@ runs:
         extra-conf: |
             accept-flake-config = true
 
-    - name: Install essential tools via nix
-      shell: bash
-      run: |
-        IFS=" "
-        for tool in ${{ inputs.__preinstall_tools }}; do
-            echo "Install $tool"
-            nix profile install "${{ inputs.__flake_ref }}#$tool"
-        done
-
     - name: Set TMPDIR for nix-daemon
       shell: bash
       run: |
-        fish "${{ inputs.__checkout_path }}/nix/set-tmpdir.fish"
+        sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida tweak-nix-daemon"
 
     - name: Add Cachix to substituters
       if: ${{ inputs.cachix-url != '' }}
@@ -85,10 +70,10 @@ runs:
             echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
             exit 1
         }
-        python "${{ inputs.__checkout_path }}/nix/add-substituter.py" \
-            "/etc/nix/nix.conf" \
-            "${{ inputs.cachix-url }}" \
-            "${{ inputs.cachix-pubkey }}"
+        sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
+            --substituter-url \"${{ inputs.cachix-url }}\" \
+            --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
+        "
 
     - name: Restart nix-daemon
       shell: bash

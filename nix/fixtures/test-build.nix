@@ -1,9 +1,12 @@
-let
+builtins.derivation {
+    name = "test";
+    builder = "/bin/sh";
+    system = builtins.currentSystem;
 
-    pkgs = import ( 
-        builtins.getFlake "nixpkgs" 
-    ) {};
+    args = [ "-c" ''
+        echo test > $out
+    '' ];
 
-in
-
-pkgs.hello.outPath
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+}
