@@ -16,3 +16,8 @@ updates:
     directory: "/nix"
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: "cargo"
+    directory: "/florida"
+    schedule:
+      interval: "weekly"
