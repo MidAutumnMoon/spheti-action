@@ -5,9 +5,9 @@ edition = "2021"
 authors = [ "MidAutumnMoon" ]
 
 [dependencies]
-anyhow = "1.0.82"
-clap = { version = "4.5.4", features = ["derive"] }
-nix-config-parser = "0.2.0"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+nix-config-parser = "0.2"
 
 [profile.release]
 lto = "thin"
