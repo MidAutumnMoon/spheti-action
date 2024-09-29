@@ -56,6 +56,7 @@ runs:
         init: systemd
         extra-conf: |
             accept-flake-config = true
+            extra-experimental-features = pipe-operators
 
     - name: Set TMPDIR for nix-daemon
       shell: bash
