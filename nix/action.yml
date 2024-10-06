@@ -54,7 +54,7 @@ runs:
         modify-profile: true
         flakehub: false
         init: systemd
-        extra-conf: |
+        extra-conf: |-
             accept-flake-config = true
             extra-experimental-features = pipe-operators
 
