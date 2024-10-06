@@ -54,8 +54,6 @@ runs:
             modify-profile: true
             flakehub: false
             init: systemd
-            extra-conf: |-
-                extra-experimental-features = pipe-operators
 
     -   name: Set TMPDIR for nix-daemon
         shell: bash

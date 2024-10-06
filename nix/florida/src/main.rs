@@ -5,7 +5,7 @@ use clap::Parser;
 
 /// The thing that pokes settings of nix daemon.
 #[ derive( Parser, Debug ) ]
-enum CmdCmds {
+enum CliOpts {
     /// Add substituters to nix.conf
     #[ command( visible_alias = "a" ) ]
     AddSubstituter( AddSubstituterOpts ),
@@ -37,15 +37,13 @@ fn main() -> anyhow::Result<()> {
 
     eprintln!( "Parse commands" );
 
-    let cmd_cmds = dbg! {
-        CmdCmds::parse()
+    let cliopts = dbg! {
+        CliOpts::parse()
     };
 
-    match cmd_cmds {
-        CmdCmds::AddSubstituter( ref opts )
-            => add_substituter( opts )?,
-        CmdCmds::TweakNixDaemon
-            => tweak_daemon()?,
+    match cliopts {
+        CliOpts::AddSubstituter( ref opts ) => add_substituter( opts )?,
+        CliOpts::TweakNixDaemon => tweak_daemon()?,
     }
 
     Ok(())
@@ -87,6 +85,12 @@ fn add_substituter( opts: &AddSubstituterOpts )
             .push_str( &format!( " {to_do}" ) )
         ;
     }
+
+    settings.entry( "experimental-features".into() )
+        .or_default()
+        // stupid extra-experimental-features doesn't works **sometimes**
+        .push_str( " pipe-operators" )
+    ;
 
     // stupid manual serialization
 
