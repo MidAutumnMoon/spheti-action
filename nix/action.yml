@@ -42,64 +42,67 @@ runs:
 
     steps:
 
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ inputs.__this_repo }}
-        path: ${{ inputs.__checkout_path }}
+    -   name: Checkout
+        uses: actions/checkout@v4
+        with:
+            repository: ${{ inputs.__this_repo }}
+            path: ${{ inputs.__checkout_path }}
 
-    - name: Setup nix
-      uses: DeterminateSystems/nix-installer-action@v14
-      with:
-        modify-profile: true
-        flakehub: false
-        init: systemd
-        extra-conf: |-
-            extra-experimental-features = pipe-operators
+    -   name: Setup nix
+        uses: DeterminateSystems/nix-installer-action@v14
+        with:
+            modify-profile: true
+            flakehub: false
+            init: systemd
+            extra-conf: |-
+                extra-experimental-features = pipe-operators
 
-    - name: Set TMPDIR for nix-daemon
-      shell: bash
-      run: |
-        sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida tweak-nix-daemon"
+    -   name: Set TMPDIR for nix-daemon
+        shell: bash
+        run: |
+            sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida tweak-nix-daemon"
 
-    - name: Add Cachix to substituters
-      if: ${{ inputs.cachix-url != '' }}
-      shell: bash
-      run: |
-        [[ "${{ inputs.cachix-pubkey }}" == "" ]] && {
-            echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
-            exit 1
-        }
-        sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
-            --substituter-url \"${{ inputs.cachix-url }}\" \
-            --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
-        "
+    -   name: Add Cachix to substituters
+        if: ${{ inputs.cachix-url != '' }}
+        shell: bash
+        run: |
+            [[ "${{ inputs.cachix-pubkey }}" == "" ]] && {
+                echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
+                exit 1
+            }
+            sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
+                --substituter-url \"${{ inputs.cachix-url }}\" \
+                --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
+            "
 
-    - name: Restart nix-daemon
-      shell: bash
-      run: |
-        sudo systemctl daemon-reload
-        sudo systemctl restart nix-daemon
+    -   name: Restart nix-daemon
+        shell: bash
+        run: |
+            sudo systemctl daemon-reload
+            sudo systemctl restart nix-daemon
 
-    - name: Verify setup
-      shell: bash
-      run: |
-        echo "Verify nix still builds"
-        nix build \
-            --no-link \
-            --print-build-logs \
-            -f "${{ inputs.__checkout_path }}/nix/fixtures/test-build.nix"
-        echo
+    -   name: Verify setup
+        shell: bash
+        run: |
+            echo "Verify nix still builds"
+            nix build \
+                --no-link \
+                --print-build-logs \
+                -f "${{ inputs.__checkout_path }}/nix/fixtures/test-build.nix"
+            echo
 
-        echo "Show nix-daemon config"
-        sudo systemctl cat nix-daemon
-        echo
+            echo "Display nix config"
+            nix config show
 
-        echo "Verify nix-daemon is active"
-        sudo systemctl is-active nix-daemon
+            echo "Show nix-daemon config"
+            sudo systemctl cat nix-daemon
+            echo
 
-    - name: Cleanup
-      shell: bash
-      run: |
-          echo "Delete checkout on disk"
-          rm -rf "${{ inputs.__checkout_path }}"
+            echo "Verify nix-daemon is active"
+            sudo systemctl is-active nix-daemon
+
+    -   name: Cleanup
+        shell: bash
+        run: |
+            echo "Delete checkout on disk"
+            rm -rf "${{ inputs.__checkout_path }}"
