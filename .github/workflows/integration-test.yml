@@ -24,7 +24,7 @@ jobs:
             cachix-pubkey: "nuirrce.cachix.org-1:KQWa6ZfDkMPXeDiUpmyDhNw4CmgybPyeVklmi/1Rtqk="
 
         - run: |
-            nix profile install nixpkgs#neofetch
-            which neofetch
-            neofetch
+            nix profile install nixpkgs#fastfetch
+            which fastfetch
+            fastfetch
             nix show-config

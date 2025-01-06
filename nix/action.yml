@@ -72,6 +72,14 @@ runs:
                 --substituter-url \"${{ inputs.cachix-url }}\" \
                 --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
             "
+            declare -r NIX_USER_CONF="$HOME/.config/nix/nix.conf"
+            if [[ -f "$NIX_USER_CONF" ]]; then
+                sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
+                    --nix-conf $HOME/.config/nix/nix.conf \
+                    --substituter-url \"${{ inputs.cachix-url }}\" \
+                    --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
+                "
+            fi
 
     -   name: Restart nix-daemon
         shell: bash
@@ -91,6 +99,8 @@ runs:
 
             echo "Display nix config"
             nix config show
+            cat /etc/nix/nix.conf || true
+            cat $HOME/.config/nix/nix.conf || true
 
             echo "Show nix-daemon config"
             sudo systemctl cat nix-daemon

@@ -76,6 +76,7 @@ fn add_substituter( opts: &AddSubstituterOpts )
     let what_to_do = [
         ( "extra-substituters", &opts.substituter_url ),
         ( "extra-trusted-public-keys", &opts.substituter_pubkey ),
+        ( "experimental-features", &"pipe-operators".into() ),
     ];
 
     for ( what, to_do ) in what_to_do {
