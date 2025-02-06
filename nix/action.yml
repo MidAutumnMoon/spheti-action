@@ -53,6 +53,9 @@ runs:
         with:
             modify-profile: true
             flakehub: false
+            extra-conf: |
+                # 512MiB in Bytes
+                download-buffer-size = 536870912
             source-tag: "v0.32.3" # BUG https://github.com/DeterminateSystems/nix-installer-action/issues/133
 
 
