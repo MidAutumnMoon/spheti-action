@@ -57,6 +57,7 @@ runs:
                 # 512MiB in Bytes
                 download-buffer-size = 536870912
                 auto-optimise-store = false
+                always-allow-substitutes = true
             source-tag: "v0.32.3" # BUG https://github.com/DeterminateSystems/nix-installer-action/issues/133
 
 
