@@ -56,6 +56,7 @@ runs:
             extra-conf: |
                 # 512MiB in Bytes
                 download-buffer-size = 536870912
+                auto-optimise-store = false
             source-tag: "v0.32.3" # BUG https://github.com/DeterminateSystems/nix-installer-action/issues/133
 
 
