@@ -1,51 +1,32 @@
 {
 
-inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    inputs.nuran.url = "github:MidAutumnMoon/Nuran";
 
-
-outputs = { self, nixpkgs, ... }: let
-
-    system = "x86_64-linux";
-
-    pkgs = import nixpkgs { inherit system; };
-
-
-    inherit ( pkgs )
-        lib
-        pkgsStatic
-        writers
-    ;
-
-    inherit ( pkgsStatic.rustPlatform )
-        buildRustPackage
-    ;
-
-    inherit ( writers )
-        writeFishBin
-    ;
-
-in {
-
-    inherit pkgs;
-
-    packages.${system} = rec {
-
-        default = buildRustPackage rec {
-            name = "florida";
-            src = lib.cleanSource ./.;
-            cargoLock.lockFile = ./Cargo.lock;
-            doCheck = false;
-            meta = { mainProgram = name; };
+    outputs = { self, nuran, ... }: let
+        lib = nuran.lib;
+        pkgsBrew = nuran.pkgsBrew.appendOverlays [ self.overlays.default ];
+    in {
+        overlays.default = final: prev: let
+            inherit ( final.pkgsStatic.rustTeapot )
+                buildRustPackage
+            ;
+        in {
+            florida-man = buildRustPackage rec {
+                pname = "florida";
+                version = "unstable";
+                src = lib.cleanSource ./.;
+                cargoLock.lockFile = ./Cargo.lock;
+                doCheck = false;
+                meta.mainProgram = pname;
+            };
+            install-florida-man = final.writers.writeBashBin "ins" ''
+                install -Dm755 \
+                    "${lib.getExe final.florida-man}" "$(pwd)/../man.florida"
+            '';
         };
 
-        install = writeFishBin "install" ''
-            install -Dm755 \
-                "${lib.getExe default}" \
-                "$(pwd)/../man.florida"
-        '';
+        packages = pkgsBrew lib.id;
 
     };
-
-};
 
 }

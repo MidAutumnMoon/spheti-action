@@ -1,7 +1,5 @@
 use std::path::PathBuf;
-
 use clap::Parser;
-
 
 /// The thing that pokes settings of nix daemon.
 #[ derive( Parser, Debug ) ]
@@ -76,7 +74,6 @@ fn add_substituter( opts: &AddSubstituterOpts )
     let what_to_do = [
         ( "extra-substituters", &opts.substituter_url ),
         ( "extra-trusted-public-keys", &opts.substituter_pubkey ),
-        ( "experimental-features", &"pipe-operators".into() ),
     ];
 
     for ( what, to_do ) in what_to_do {
@@ -91,6 +88,10 @@ fn add_substituter( opts: &AddSubstituterOpts )
         .or_default()
         // stupid extra-experimental-features doesn't works **sometimes**
         .push_str( " pipe-operators" )
+    ;
+
+    settings.entry( "auto-optimise-store".into() )
+        .insert_entry( "false".into() )
     ;
 
     // stupid manual serialization
