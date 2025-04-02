@@ -104,6 +104,7 @@ runs:
             echo
 
             echo "Display nix config"
+            nix --version
             nix config show
             cat /etc/nix/nix.conf || true
             cat $HOME/.config/nix/nix.conf || true
@@ -120,3 +121,5 @@ runs:
         run: |
             echo "Delete checkout on disk"
             rm -rf "${{ inputs.__checkout_path }}"
+
+# vim: nowrap:
