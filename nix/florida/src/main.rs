@@ -7,10 +7,6 @@ enum CliOpts {
     /// Add substituters to nix.conf
     #[ command( visible_alias = "a" ) ]
     AddSubstituter( AddSubstituterOpts ),
-
-    /// Apply some settings around nix daemon
-    #[ command( visible_alias = "t" ) ]
-    TweakNixDaemon,
 }
 
 #[ derive( clap::Args, Debug ) ]
@@ -30,7 +26,6 @@ struct AddSubstituterOpts {
     substituter_pubkey: String,
 }
 
-
 fn main() -> anyhow::Result<()> {
 
     eprintln!( "Parse commands" );
@@ -41,7 +36,6 @@ fn main() -> anyhow::Result<()> {
 
     match cliopts {
         CliOpts::AddSubstituter( ref opts ) => add_substituter( opts )?,
-        CliOpts::TweakNixDaemon => tweak_daemon()?,
     }
 
     Ok(())
@@ -87,11 +81,7 @@ fn add_substituter( opts: &AddSubstituterOpts )
     settings.entry( "experimental-features".into() )
         .or_default()
         // stupid extra-experimental-features doesn't works **sometimes**
-        .push_str( " pipe-operators" )
-    ;
-
-    settings.entry( "auto-optimise-store".into() )
-        .insert_entry( "false".into() )
+        .push_str( " pipe-operator" )
     ;
 
     // stupid manual serialization
@@ -109,49 +99,6 @@ fn add_substituter( opts: &AddSubstituterOpts )
     eprintln!( "Write nix.conf" );
 
     std::fs::write( &opts.nix_conf, config )?;
-
-    Ok(())
-
-}
-
-
-
-/// The function which changes surrounding
-/// configuration of nix daemon.
-///
-/// 1) Set TMPDIR to a location on disk rather than
-/// in memory to avoid OOM during large builds.
-fn tweak_daemon() -> anyhow::Result<()> {
-
-    eprintln!( "Do TweakNixDaemon" );
-
-    let nixbuild_on_disk = dbg! {
-        PathBuf::from( "/nixbuild" )
-    };
-
-    let service_dir = dbg! {
-        PathBuf::from( "/etc/systemd/system/nix-daemon.service.d" )
-    };
-
-    let systemd_conf = dbg! {
-        service_dir.join( "99-tmpdir.conf" )
-    };
-
-    eprintln!( "Create new TMPDIR" );
-
-    std::fs::create_dir_all( &nixbuild_on_disk )?;
-
-    eprintln!( "Write systemd conf for nix daemon" );
-
-    std::fs::create_dir_all( &service_dir )?;
-
-    std::fs::write( systemd_conf, format! {
-        "\
-            [Service]\n\
-            Environment = TMPDIR={}\
-        ",
-        &nixbuild_on_disk.display()
-    } )?;
 
     Ok(())
 

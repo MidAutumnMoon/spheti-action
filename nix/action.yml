@@ -48,23 +48,14 @@ runs:
             repository: ${{ inputs.__this_repo }}
             path: ${{ inputs.__checkout_path }}
 
-    -   name: Setup nix
-        uses: DeterminateSystems/nix-installer-action@v17
+    -   name: Setup Lix
+        uses: canidae-solutions/lix-quick-install-action@v3
         with:
-            modify-profile: true
-            flakehub: false
-            extra-conf: |
+            lix_conf: |
                 # 512MiB in Bytes
-                download-buffer-size = 536870912
                 auto-optimise-store = false
                 always-allow-substitutes = true
-            source-tag: "v0.32.3" # BUG https://github.com/DeterminateSystems/nix-installer-action/issues/133
-
-
-    -   name: Set TMPDIR for nix-daemon
-        shell: bash
-        run: |
-            sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida tweak-nix-daemon"
+                extra-experimental-features = pipe-operator
 
     -   name: Add Cachix to substituters
         if: ${{ inputs.cachix-url != '' }}
@@ -74,24 +65,13 @@ runs:
                 echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
                 exit 1
             }
-            sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
-                --substituter-url \"${{ inputs.cachix-url }}\" \
-                --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
-            "
             declare -r NIX_USER_CONF="$HOME/.config/nix/nix.conf"
             if [[ -f "$NIX_USER_CONF" ]]; then
-                sudo bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
-                    --nix-conf $HOME/.config/nix/nix.conf \
-                    --substituter-url \"${{ inputs.cachix-url }}\" \
-                    --substituter-pubkey \"${{ inputs.cachix-pubkey }}\" \
-                "
+                bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
+                    --nix-conf '$NIX_USER_CONF' \
+                    --substituter-url '${{ inputs.cachix-url }}' \
+                    --substituter-pubkey '${{ inputs.cachix-pubkey }}'"
             fi
-
-    -   name: Restart nix-daemon
-        shell: bash
-        run: |
-            sudo systemctl daemon-reload
-            sudo systemctl restart nix-daemon
 
     -   name: Verify setup
         shell: bash
@@ -106,15 +86,6 @@ runs:
             echo "Display nix config"
             nix --version
             nix config show
-            cat /etc/nix/nix.conf || true
-            cat $HOME/.config/nix/nix.conf || true
-
-            echo "Show nix-daemon config"
-            sudo systemctl cat nix-daemon
-            echo
-
-            echo "Verify nix-daemon is active"
-            sudo systemctl is-active nix-daemon
 
     -   name: Cleanup
         shell: bash

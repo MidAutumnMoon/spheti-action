@@ -7,7 +7,7 @@
         pkgsBrew = nuran.pkgsBrew.appendOverlays [ self.overlays.default ];
     in {
         overlays.default = final: prev: let
-            inherit ( final.pkgsStatic.rustTeapot )
+            inherit ( final.pkgsStatic.tsuki.rust )
                 buildRustPackage
             ;
         in {
