@@ -73,6 +73,14 @@ runs:
                     --substituter-pubkey '${{ inputs.cachix-pubkey }}'"
             fi
 
+    -   name: Disable AppArmor
+        shell: bash
+        run: |
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+            sudo aa-teardown || true
+            sudo systemctl disable --now apparmor.service
+
     -   name: Verify setup
         shell: bash
         run: |
