@@ -60,10 +60,10 @@ runs:
         uses: canidae-solutions/lix-quick-install-action@v3
         with:
             lix_conf: |
-                # 512MiB in Bytes
                 auto-optimise-store = false
                 always-allow-substitutes = true
                 extra-experimental-features = pipe-operator
+                sandbox-fallback = false
 
     -   name: Add Cachix to substituters
         if: ${{ inputs.cachix-url != '' }}
