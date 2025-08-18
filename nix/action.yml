@@ -51,7 +51,7 @@ runs:
             sudo systemctl disable --now apparmor.service
 
     -   name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
             repository: ${{ inputs.__this_repo }}
             path: ${{ inputs.__checkout_path }}
