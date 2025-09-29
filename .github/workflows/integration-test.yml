@@ -4,9 +4,7 @@ on:
     workflow_dispatch:
     push:
 
-
 jobs:
-
     test-nix:
         name: "Piece: nix"
         runs-on: ubuntu-latest
@@ -15,19 +13,18 @@ jobs:
             run: { shell: "bash" }
 
         steps:
+            - uses: actions/checkout@v5
 
-        - uses: actions/checkout@v5
+            - uses: MidAutumnMoon/spheti-action/nix@master
+              with:
+                  cachix-url: "https://nuirrce.cachix.org/"
+                  cachix-pubkey: "nuirrce.cachix.org-1:KQWa6ZfDkMPXeDiUpmyDhNw4CmgybPyeVklmi/1Rtqk="
 
-        - uses: MidAutumnMoon/spheti-action/nix@master
-          with:
-            cachix-url: "https://nuirrce.cachix.org/"
-            cachix-pubkey: "nuirrce.cachix.org-1:KQWa6ZfDkMPXeDiUpmyDhNw4CmgybPyeVklmi/1Rtqk="
-
-        - run: |
-            nix profile install nixpkgs#fastfetch
-            which fastfetch
-            fastfetch
-            nix show-config
+            - run: |
+                  nix profile install nixpkgs#fastfetch
+                  which fastfetch
+                  fastfetch
+                  nix show-config
 
         # -   name: Setup tmate session
         #     if: ${{ failure() }}

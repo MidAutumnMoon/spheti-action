@@ -1,5 +1,4 @@
 inputs:
-
     #
     # Cachix
     #
@@ -18,7 +17,6 @@ inputs:
 
     # extra-pubkeys:
 
-
     #
     # [Intended for internal use]
     #
@@ -35,70 +33,73 @@ inputs:
         default: "MidAutumnMoon/spheti-action"
         required: false
 
-
 runs:
-
     using: composite
 
     steps:
+        - name: Disable AppArmor
+          shell: bash
+          run: |
+              sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+              sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+              sudo aa-teardown || true
+              sudo systemctl disable --now apparmor.service
 
-    -   name: Disable AppArmor
-        shell: bash
-        run: |
-            sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-            sudo aa-teardown || true
-            sudo systemctl disable --now apparmor.service
+        - name: Freeup spaces
+          shell: bash
+          run: |
+              sudo bash "${{ inputs.__checkout_path }}/nix/freeup.sh" &
+              disown
 
-    -   name: Checkout
-        uses: actions/checkout@v5
-        with:
-            repository: ${{ inputs.__this_repo }}
-            path: ${{ inputs.__checkout_path }}
+        - name: Checkout
+          uses: actions/checkout@v5
+          with:
+              repository: ${{ inputs.__this_repo }}
+              path: ${{ inputs.__checkout_path }}
 
-    -   name: Setup Lix
-        uses: canidae-solutions/lix-quick-install-action@v3
-        with:
-            lix_conf: |
-                auto-optimise-store = false
-                always-allow-substitutes = true
-                extra-experimental-features = pipe-operator
-                sandbox-fallback = false
+        - name: Setup Lix
+          uses: canidae-solutions/lix-quick-install-action@v3
+          with:
+              lix_conf: |
+                  auto-optimise-store = false
+                  always-allow-substitutes = true
+                  extra-experimental-features = pipe-operator
+                  sandbox-fallback = false
 
-    -   name: Add Cachix to substituters
-        if: ${{ inputs.cachix-url != '' }}
-        shell: bash
-        run: |
-            [[ "${{ inputs.cachix-pubkey }}" == "" ]] && {
-                echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
-                exit 1
-            }
-            declare -r NIX_USER_CONF="$HOME/.config/nix/nix.conf"
-            if [[ -f "$NIX_USER_CONF" ]]; then
-                bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
-                    --nix-conf '$NIX_USER_CONF' \
-                    --substituter-url '${{ inputs.cachix-url }}' \
-                    --substituter-pubkey '${{ inputs.cachix-pubkey }}'"
-            fi
+        - name: Add Cachix to substituters
+          if: ${{ inputs.cachix-url != '' }}
+          shell: bash
+          run: |
+              [[ "${{ inputs.cachix-pubkey }}" == "" ]] && {
+                  echo '::error::When "cachix-url" is set, "cachix-pubkey" must also be set.'
+                  exit 1
+              }
+              declare -r NIX_USER_CONF="$HOME/.config/nix/nix.conf"
+              if [[ -f "$NIX_USER_CONF" ]]; then
+                  bash -c "exec ${{ inputs.__checkout_path }}/nix/man.florida add-substituter \
+                      --nix-conf '$NIX_USER_CONF' \
+                      --substituter-url '${{ inputs.cachix-url }}' \
+                      --substituter-pubkey '${{ inputs.cachix-pubkey }}'"
+              fi
 
-    -   name: Verify setup
-        shell: bash
-        run: |
-            echo "Verify nix still builds"
-            nix build \
-                --no-link \
-                --print-build-logs \
-                -f "${{ inputs.__checkout_path }}/nix/fixtures/test-build.nix"
-            echo
+        - name: Verify setup
+          shell: bash
+          run: |
+              echo "Verify nix still builds"
+              nix build \
+                  --no-link \
+                  --print-build-logs \
+                  -f "${{ inputs.__checkout_path }}/nix/fixtures/test-build.nix"
+              echo
 
-            echo "Display nix config"
-            nix --version
-            nix config show
+              echo "Display nix config"
+              nix --version
+              nix config show
 
-    -   name: Cleanup
-        shell: bash
-        run: |
-            echo "Delete checkout on disk"
-            rm -rf "${{ inputs.__checkout_path }}"
+        - name: Cleanup
+          shell: bash
+          run: |
+              echo "Delete checkout on disk"
+              rm -rf "${{ inputs.__checkout_path }}"
 
 # vim: nowrap:
