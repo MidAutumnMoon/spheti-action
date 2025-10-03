@@ -2,6 +2,17 @@
 
 printf "Before:\n%s" "$(df -h)"
 
+rm -rf "$HOME/.cargo" &
+rm -rf "$HOME/.composer" &
+rm -rf "$HOME/.dotnet" &
+rm -rf "$HOME/.nvm" &
+rm -rf "$HOME/.rustup" &
+
+for d in /opt/* /var/lib/*
+do
+    sudo rm -rf "$d" &
+done
+
 sudo apt autopurge --yes --autoremove manpages man-db
 
 sudo apt autopurge --yes --autoremove \
@@ -144,7 +155,7 @@ sudo apt autopurge --yes --autoremove \
     zerofree\* \
     zsync\*
 
-for d in /usr/local/* /opt/* /var/lib/*
+for d in /usr/local/*
 do
     sudo rm -rf "$d" &
 done
@@ -155,9 +166,3 @@ sudo rm -rf /usr/share/swift &
 sudo rm -rf /usr/share/az_* &
 sudo rm -rf /usr/share/gradle &
 sudo rm -rf /usr/share/kotlin* &
-
-rm -rf $HOME/.cargo &
-rm -rf $HOME/.composer &
-rm -rf $HOME/.dotnet &
-rm -rf $HOME/.nvm &
-rm -rf $HOME/.rustup &
