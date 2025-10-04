@@ -166,3 +166,5 @@ sudo rm -rf /usr/share/swift &
 sudo rm -rf /usr/share/az_* &
 sudo rm -rf /usr/share/gradle &
 sudo rm -rf /usr/share/kotlin* &
+
+wait
