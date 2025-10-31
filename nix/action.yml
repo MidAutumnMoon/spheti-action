@@ -48,7 +48,7 @@ runs:
         - name: Freeup spaces
           shell: bash
           run: |
-              sudo bash "${{ inputs.__checkout_path }}/nix/freeup.sh" &
+              sudo bash "${{ inputs.__checkout_path }}/nix/freeup.bash" &
               disown
 
         - name: Checkout
