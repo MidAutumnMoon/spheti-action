@@ -37,6 +37,12 @@ runs:
     using: composite
 
     steps:
+        - name: Checkout
+          uses: actions/checkout@v5
+          with:
+              repository: ${{ inputs.__this_repo }}
+              path: ${{ inputs.__checkout_path }}
+
         - name: Disable AppArmor
           shell: bash
           run: |
@@ -50,12 +56,6 @@ runs:
           run: |
               sudo bash "${{ inputs.__checkout_path }}/nix/freeup.bash" &
               disown
-
-        - name: Checkout
-          uses: actions/checkout@v5
-          with:
-              repository: ${{ inputs.__this_repo }}
-              path: ${{ inputs.__checkout_path }}
 
         - name: Setup Lix
           uses: canidae-solutions/lix-quick-install-action@v3
