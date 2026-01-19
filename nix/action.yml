@@ -59,7 +59,7 @@ runs:
               disown
 
         - name: Setup Lix
-          uses: canidae-solutions/lix-quick-install-action@v3
+          uses: canidae-solutions/lix-quick-install-action@v4
           with:
               lix_conf: |
                   auto-optimise-store = false
